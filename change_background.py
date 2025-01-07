@@ -82,7 +82,7 @@ def main():
     st.subheader("Введите цвет фона (RGB):")
     # Создаем три отдельных слайдера для RGB
     r = st.slider("Красный (R)", 0, 255, 0, step=1)
-    g = st.slider("Зеленый (G)", 0, 255, 0, step=1)
+    g = st.slider("Зеленый (G)", 0, 255, 255, step=1)
     b = st.slider("Синий (B)", 0, 255, 255, step=1)
 
     st.write(f"Вы выбрали цвет: RGB({r}, {g}, {b})")
