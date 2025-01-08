@@ -10,49 +10,29 @@ import tempfile
 # Функция для изменения фона на заданный цвет
 def change_background(image_path, output_path, bg_color):
     try:
-        # Загружаем изображение с поддержкой альфа-канала (прозрачности)
-        img = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
-        
+        # Загружаем изображение
+        img = cv2.imread(image_path)
         if img is None:
             return f"Ошибка: не удалось загрузить изображение {image_path}"
         
-        # Проверяем, есть ли альфа-канал (прозрачность)
-        if img.shape[2] == 4:  # Изображение с альфа-каналом
-            # Разделяем каналы: BGR и альфа
-            bgr = img[:, :, :3]
-            alpha = img[:, :, 3]
-            
-            # Создаем маску для прозрачных пикселей (где alpha = 0)
-            transparent_mask = alpha == 0
-
-            # Преобразуем цвет фона в формат BGR
-            bg_color_bgr = np.array([bg_color[2], bg_color[1], bg_color[0]])  # [B, G, R]
-            
-            # Меняем прозрачный фон на выбранный цвет
-            bgr[transparent_mask] = bg_color_bgr
-
-            # Объединяем каналы обратно в одно изображение
-            img_with_bg = cv2.merge([bgr, alpha])
-        else:
-            # Если альфа-канала нет, обрабатываем изображение как обычное
-            hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-            
-            # Определяем диапазоны для белого цвета в HSV
-            lower_white = np.array([0, 0, 200])
-            upper_white = np.array([180, 20, 255])
-            
-            # Маска для белого фона
-            mask = cv2.inRange(hsv, lower_white, upper_white)
-            
-            # Преобразуем цвет фона в формат BGR
-            bg_color_bgr = np.array([bg_color[2], bg_color[1], bg_color[0]])  # [B, G, R]
-            
-            # Меняем белый фон на выбранный цвет
-            img[mask == 255] = bg_color_bgr
-            img_with_bg = img
+        # Переводим изображение в HSV для лучшей работы с цветами
+        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        
+        # Определяем диапазоны для белого цвета в HSV
+        lower_white = np.array([0, 0, 200])
+        upper_white = np.array([180, 20, 255])
+        
+        # Маска для белого фона
+        mask = cv2.inRange(hsv, lower_white, upper_white)
+        
+        # Преобразуем цвет фона в формат BGR (OpenCV использует BGR)
+        bg_color_bgr = np.array([bg_color[2], bg_color[1], bg_color[0]])  # [B, G, R]
+        
+        # Меняем белый фон на заданный цвет
+        img[mask == 255] = bg_color_bgr
         
         # Сохраняем обработанное изображение
-        cv2.imwrite(output_path, img_with_bg)
+        cv2.imwrite(output_path, img)
         return None  # Успешное завершение
     except Exception as e:
         return f"Ошибка при обработке изображения {image_path}: {e}"
@@ -100,6 +80,7 @@ def process_zip(input_zip, bg_color):
 
     except Exception as e:
         return f"Ошибка при обработке архива: {e}"
+
 
 # Основная часть программы для Streamlit
 def main():
