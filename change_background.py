@@ -77,11 +77,6 @@ def process_zip(input_zip, bg_color):
     except Exception as e:
         return f"Ошибка при обработке архива: {e}"
 
-    finally:
-        # Очищаем временную папку после обработки
-        if os.path.exists(temp_folder):
-            shutil.rmtree(temp_folder)
-
 
 # Основная часть программы для Streamlit
 # Основная часть программы для Streamlit
@@ -116,7 +111,11 @@ def main():
             if isinstance(result, str) and result.endswith(".zip"):
                 st.success("Обработка завершена! Скачать архив с изображениями:")
                 with open(result, 'rb') as f:
-                    st.download_button('Скачать архив', f, file_name='BG_changed.zip')
+                    download_button = st.download_button('Скачать архив', f, file_name='BG_changed.zip')
+                    
+                    # Удаляем архив только после скачивания
+                    if download_button:
+                        os.remove(result)  # Удаляем архив после того, как пользователь скачает его
             else:
                 st.error(result)
 
