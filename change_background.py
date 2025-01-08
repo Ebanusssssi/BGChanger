@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import zipfile
 import os
+import shutil  # Для удаления папок
 
 # Функция для изменения фона на заданный цвет
 def change_background(image_path, output_path, bg_color):
@@ -34,9 +35,23 @@ def change_background(image_path, output_path, bg_color):
     except Exception as e:
         return f"Ошибка при обработке изображения {image_path}: {e}"
 
+# Функция для очистки временной папки
+def clean_output_folder(output_folder):
+    """Очистка временной папки от старых файлов."""
+    if os.path.exists(output_folder):
+        # Удаляем все содержимое в папке
+        for root, dirs, files in os.walk(output_folder, topdown=False):
+            for file in files:
+                os.remove(os.path.join(root, file))
+            for dir in dirs:
+                os.rmdir(os.path.join(root, dir))
+
 # Функция для работы с архивом
 def process_zip(input_zip, output_folder, bg_color):
     try:
+        # Очищаем папку перед использованием
+        clean_output_folder(output_folder)
+
         # Создаем временную папку для хранения обработанных изображений
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
@@ -80,6 +95,8 @@ def process_zip(input_zip, output_folder, bg_color):
                     # Удаляем временный обработанный файл
                     os.remove(output_image_path)
             
+        # Очистка папки после завершения обработки
+        clean_output_folder(output_folder)
         
         return output_zip  # Возвращаем путь к архиву с обработанными изображениями
     except Exception as e:
@@ -115,7 +132,7 @@ def main():
             result = process_zip("uploaded.zip", output_folder, bg_color) 
             
             if isinstance(result, str) and result.endswith(".zip"):
-                st.success("Обработка завершена! Скачать архив с изображениями:")
+                st.success("Обработка завершена! Скачать архив с изображениями: ")
                 with open(result, 'rb') as f:
                     st.download_button('Скачать архив', f, file_name='BG_changed.zip')
             else:
