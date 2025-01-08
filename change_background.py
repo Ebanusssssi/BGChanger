@@ -56,6 +56,10 @@ def process_zip(input_zip, bg_color):
                 for filename in files:
                     file_path = os.path.join(root, filename)
                     
+                    # Пропускаем файлы и папки, начинающиеся с '__MACOSX' или '._'
+                    if filename.startswith('__MACOSX') or filename.startswith('._'):
+                        continue
+                    
                     # Пропускаем если это не изображение
                     if not file_path.lower().endswith(('jpg', 'jpeg', 'png')):
                         continue
@@ -79,13 +83,11 @@ def process_zip(input_zip, bg_color):
 
 
 # Основная часть программы для Streamlit
-# Основная часть программы для Streamlit
 def main():
     st.title('Изменение фона изображений')
     
     # Ввод цвета для фона
     st.subheader("Введите цвет фона (RGB):")
-    # Создаем три отдельных слайдера для RGB
     r = st.slider("Красный (R)", 0, 255, 245, step=1)
     g = st.slider("Зеленый (G)", 0, 255, 245, step=1)
     b = st.slider("Синий (B)", 0, 255, 245, step=1)
