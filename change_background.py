@@ -53,8 +53,18 @@ def process_zip(input_zip, output_folder, bg_color):
                 for filename in files:
                     file_path = os.path.join(root, filename)
                     
+                    # Пропускаем скрытые файлы и метафайлы
+                    if filename.startswith("._") or filename == "__MACOSX":
+                        continue
+                    
                     # Пропускаем если это не изображение
                     if not file_path.lower().endswith(('jpg', 'jpeg', 'png')):
+                        continue
+                    
+                    # Проверка на корректность изображения
+                    img = cv2.imread(file_path)
+                    if img is None:
+                        st.error(f"Не удалось загрузить изображение {filename}")
                         continue
                     
                     # Меняем фон на выбранный цвет
@@ -69,6 +79,7 @@ def process_zip(input_zip, output_folder, bg_color):
                     zip_ref.write(output_image_path, os.path.relpath(output_image_path, output_folder))
                     # Удаляем временный обработанный файл
                     os.remove(output_image_path)
+            
         
         return output_zip  # Возвращаем путь к архиву с обработанными изображениями
     except Exception as e:
