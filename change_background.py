@@ -3,7 +3,6 @@ import cv2
 import numpy as np
 import zipfile
 import os
-import shutil  # Для удаления папок
 
 # Функция для изменения фона на заданный цвет
 def change_background(image_path, output_path, bg_color):
@@ -35,23 +34,9 @@ def change_background(image_path, output_path, bg_color):
     except Exception as e:
         return f"Ошибка при обработке изображения {image_path}: {e}"
 
-# Функция для очистки временной папки
-def clean_output_folder(output_folder):
-    """Очистка временной папки от старых файлов."""
-    if os.path.exists(output_folder):
-        # Удаляем все содержимое в папке
-        for root, dirs, files in os.walk(output_folder, topdown=False):
-            for file in files:
-                os.remove(os.path.join(root, file))
-            for dir in dirs:
-                os.rmdir(os.path.join(root, dir))
-
 # Функция для работы с архивом
 def process_zip(input_zip, output_folder, bg_color):
     try:
-        # Очищаем папку перед использованием
-        clean_output_folder(output_folder)
-
         # Создаем временную папку для хранения обработанных изображений
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
@@ -68,18 +53,8 @@ def process_zip(input_zip, output_folder, bg_color):
                 for filename in files:
                     file_path = os.path.join(root, filename)
                     
-                    # Пропускаем скрытые файлы и метафайлы
-                    if filename.startswith("._") or filename == "__MACOSX":
-                        continue
-                    
                     # Пропускаем если это не изображение
                     if not file_path.lower().endswith(('jpg', 'jpeg', 'png')):
-                        continue
-                    
-                    # Проверка на корректность изображения
-                    img = cv2.imread(file_path)
-                    if img is None:
-                        st.error(f"Не удалось загрузить изображение {filename}")
                         continue
                     
                     # Меняем фон на выбранный цвет
@@ -94,9 +69,6 @@ def process_zip(input_zip, output_folder, bg_color):
                     zip_ref.write(output_image_path, os.path.relpath(output_image_path, output_folder))
                     # Удаляем временный обработанный файл
                     os.remove(output_image_path)
-            
-        # Очистка папки после завершения обработки
-        clean_output_folder(output_folder)
         
         return output_zip  # Возвращаем путь к архиву с обработанными изображениями
     except Exception as e:
@@ -129,16 +101,12 @@ def main():
             bg_color = [r, g, b]  # Цвет фона
             output_folder = "output_folder"
             
-            result = process_zip("uploaded.zip", output_folder, bg_color) 
+            result = process_zip("uploaded.zip", output_folder, bg_color)
             
-              # Проверка, был ли создан архив
             if isinstance(result, str) and result.endswith(".zip"):
-                if os.path.exists(result):  # Проверяем существование архива
-                    st.success("Обработка завершена! Скачать архив с изображениями: ")
-                    with open(result, 'rb') as f:
-                        st.download_button('Скачать архив', f, file_name='BG_changed.zip')
-                else:
-                    st.error("Не удалось создать архив с обработанными изображениями.")
+                st.success("Обработка завершена! Скачать архив с изображениями:")
+                with open(result, 'rb') as f:
+                    st.download_button('Скачать архив', f, file_name='BG_changed.zip')
             else:
                 st.error(result)
 
