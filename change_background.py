@@ -3,6 +3,9 @@ import cv2
 import numpy as np
 import zipfile
 import os
+import uuid
+import shutil
+import tempfile
 
 # Функция для изменения фона на заданный цвет
 def change_background(image_path, output_path, bg_color):
@@ -35,21 +38,21 @@ def change_background(image_path, output_path, bg_color):
         return f"Ошибка при обработке изображения {image_path}: {e}"
 
 # Функция для работы с архивом
-def process_zip(input_zip, output_folder, bg_color):
+def process_zip(input_zip, bg_color):
     try:
-        # Создаем временную папку для хранения обработанных изображений
-        if not os.path.exists(output_folder):
-            os.makedirs(output_folder)
-        
+        # Создаем уникальную временную папку для каждого архива
+        temp_folder = tempfile.mkdtemp()
+
         # Распаковываем архив во временную папку
         with zipfile.ZipFile(input_zip, 'r') as zip_ref:
-            zip_ref.extractall(output_folder)
-        
+            zip_ref.extractall(temp_folder)
+
         # Создаем новый архив для обработанных изображений
-        output_zip = os.path.join(output_folder, 'processed_images.zip')
+        output_zip = os.path.join(temp_folder, 'processed_images.zip')
+        
         with zipfile.ZipFile(output_zip, 'w') as zip_ref:
             # Проходим по всем файлам и папкам в извлеченной структуре
-            for root, dirs, files in os.walk(output_folder):
+            for root, dirs, files in os.walk(temp_folder):
                 for filename in files:
                     file_path = os.path.join(root, filename)
                     
@@ -58,7 +61,7 @@ def process_zip(input_zip, output_folder, bg_color):
                         continue
                     
                     # Меняем фон на выбранный цвет
-                    output_image_path = os.path.join(output_folder, f'{filename}')
+                    output_image_path = os.path.join(temp_folder, filename)
                     error = change_background(file_path, output_image_path, bg_color)
                     
                     if error:
@@ -66,13 +69,18 @@ def process_zip(input_zip, output_folder, bg_color):
                         continue
                     
                     # Добавляем обработанное изображение в архив
-                    zip_ref.write(output_image_path, os.path.relpath(output_image_path, output_folder))
-                    # Удаляем временный обработанный файл
-                    os.remove(output_image_path)
+                    zip_ref.write(output_image_path, os.path.relpath(output_image_path, temp_folder))
         
-        return output_zip  # Возвращаем путь к архиву с обработанными изображениями
+        # Возвращаем путь к архиву с обработанными изображениями
+        return output_zip
+
     except Exception as e:
         return f"Ошибка при обработке архива: {e}"
+
+    finally:
+        # Очищаем временную папку после обработки
+        if os.path.exists(temp_folder):
+            shutil.rmtree(temp_folder)
 
 # Основная часть программы для Streamlit
 def main():
