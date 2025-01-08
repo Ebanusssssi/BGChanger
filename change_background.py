@@ -101,7 +101,7 @@ def main():
             bg_color = [r, g, b]  # Цвет фона
             output_folder = "output_folder"
             
-            result = process_zip("uploaded.zip", output_folder, bg_color)
+            result = process_zip("uploaded.zip", output_folder, bg_color) 
             
             if isinstance(result, str) and result.endswith(".zip"):
                 st.success("Обработка завершена! Скачать архив с изображениями:")
