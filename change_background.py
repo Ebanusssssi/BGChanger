@@ -131,10 +131,14 @@ def main():
             
             result = process_zip("uploaded.zip", output_folder, bg_color) 
             
+              # Проверка, был ли создан архив
             if isinstance(result, str) and result.endswith(".zip"):
-                st.success("Обработка завершена! Скачать архив с изображениями: ")
-                with open(result, 'rb') as f:
-                    st.download_button('Скачать архив', f, file_name='BG_changed.zip')
+                if os.path.exists(result):  # Проверяем существование архива
+                    st.success("Обработка завершена! Скачать архив с изображениями: ")
+                    with open(result, 'rb') as f:
+                        st.download_button('Скачать архив', f, file_name='BG_changed.zip')
+                else:
+                    st.error("Не удалось создать архив с обработанными изображениями.")
             else:
                 st.error(result)
 
