@@ -82,6 +82,8 @@ def process_zip(input_zip, bg_color):
         if os.path.exists(temp_folder):
             shutil.rmtree(temp_folder)
 
+
+# Основная часть программы для Streamlit
 # Основная часть программы для Streamlit
 def main():
     st.title('Изменение фона изображений')
@@ -107,9 +109,9 @@ def main():
         if st.button('Запустить обработку'):
             st.write("Обработка началась...")
             bg_color = [r, g, b]  # Цвет фона
-            output_folder = "output_folder"
             
-            result = process_zip("uploaded.zip", output_folder, bg_color)
+            # Запуск функции для обработки архива
+            result = process_zip("uploaded.zip", bg_color)
             
             if isinstance(result, str) and result.endswith(".zip"):
                 st.success("Обработка завершена! Скачать архив с изображениями:")
